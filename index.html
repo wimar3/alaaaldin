@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>إعادة تعيين كلمة المرور</title>
+</head>
+<body>
+    <div id="message"></div>
+    
+    <script>
+        // معالجة token إعادة التعيين
+        async function handleResetPassword() {
+            const hash = window.location.hash;
+            const messageDiv = document.getElementById('message');
+            
+            if (hash.includes('type=recovery')) {
+                messageDiv.innerHTML = '<p>جاري معالجة طلبك...</p>';
+                
+                // إعادة التوجيه إلى التطبيق مع token
+                window.location.href = 'yourapp://reset-password' + hash;
+            } else {
+                messageDiv.innerHTML = '<p>رابط غير صالح</p>';
+            }
+        }
+        
+        handleResetPassword();
+    </script>
+</body>
+</html>
