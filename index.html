@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Supabase Auth Handler</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .box { max-width: 400px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2 id="title">Processing...</h2>
+  <div id="content"></div>
+</div>
+
+<script>
+  // 1. إعداد Supabase
+  const supabase = supabase.createClient(
+    "https://qgwlcuxrudvdnmryajza.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnd2xjdXhydWR2ZG5tcnlhanphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczMzczNTMsImV4cCI6MjA2MjkxMzM1M30.ulELQIWdOGcc28zMuobV6MzNmud9g1Fj5ZhbAku7m7E"
+  );
+
+  async function handleLink() {
+    const params = new URLSearchParams(window.location.search);
+
+    const type = params.get("type");
+    const access_token = params.get("access_token");
+
+    const content = document.getElementById("content");
+    const title = document.getElementById("title");
+
+    // 2. تحديد نوع الرابط
+    if (type === "recovery") {
+      title.innerText = "إعادة تعيين كلمة السر";
+
+      // عرض نموذج إدخال كلمة السر الجديدة
+      content.innerHTML = `
+        <input id="newPassword" type="password" placeholder="كلمة السر الجديدة" style="width:100%; padding:8px;" />
+        <button onclick="resetPassword()" style="margin-top:10px; width:100%;">تغيير كلمة السر</button>
+      `;
+
+      // تسجيل الدخول تلقائياً باستخدام access_token
+      await supabase.auth.setSession({
+        access_token: access_token,
+        refresh_token: access_token
+      });
+
+    } else if (type === "signup") {
+      title.innerText = "تم تفعيل الحساب بنجاح!";
+      content.innerHTML = "<p>يمكنك الآن فتح التطبيق وتسجيل الدخول.</p>";
+
+    } else {
+      title.innerText = "رابط غير معروف";
+      content.innerHTML = "<p>هذا الرابط لا يتوافق مع Supabase.</p>";
+    }
+  }
+
+  // 3. تغيير كلمة السر عبر Supabase
+  async function resetPassword() {
+    const newPass = document.getElementById("newPassword").value;
+
+    if (!newPass) {
+      alert("يرجى إدخال كلمة سر جديدة");
+      return;
+    }
+
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPass
+    });
+
+    if (error) {
+      alert("خطأ: " + error.message);
+    } else {
+      alert("تم تغيير كلمة السر بنجاح!");
+    }
+  }
+
+  handleLink();
+</script>
+
+</body>
+</html>
